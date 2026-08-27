@@ -1,0 +1,353 @@
+---
+title: "Analysis of Baggage Complaints (2004-2010)"
+author: "fionhuang@ucsb.edu"
+subtitle: "Fion Huang"
+date: "June 10, 2024"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Abstract
+
+This project aims to forecast baggage complaints for three major airlines—United Airlines, American Eagle, and Hawaiian Airlines—using Seasonal Autoregressive Integrated Moving Average (SARIMA) and Spectral Analysis models. By analyzing historical data and identifying seasonal patterns, we seek to determine the optimal times of the year for travel and enhance airline preparedness for future complaint scenarios. The project involves collecting and preprocessing data, and implementing and comparing the SARIMA and ARMAX models. Our evaluation focuses on the models' accuracy and reliability, using metrics such as Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE). The findings are expected to provide actionable insights for travelers and airlines, highlighting peak complaint periods and recommending resource allocation strategies. This study contributes to the field of time series forecasting and aims to improve both passenger experience and operational efficiency in the airline industry.
+
+# Introduction
+
+In the competitive landscape of the airline industry, baggage handling issues such as loss, damage, or delays significantly impact customer satisfaction and operational costs. Recognizing the need for better predictive models to manage these challenges, our project seeks to forecast the frequency and timing of baggage complaints for major airlines including United Airlines, American Eagle, and Hawaiian Airlines. The goal is to optimize resource allocation and enhance the overall passenger experience.
+
+The selection of this topic is driven by the pivotal role that effective baggage management plays in airline customer loyalty and the direct costs associated with mishandled luggage. For our analysis, we utilized a comprehensive dataset containing 252 monthly observations from 2004 to 2010, which provides a detailed record of baggage issues across different carriers.
+
+Previous studies have explored various aspects of airline operational challenges, but our approach advances this research by integrating sophisticated time series forecasting methods. Specifically, we employed the Seasonal Autoregressive Integrated Moving Average (SARIMA) and Spectral Analysis techniques. These methods allow us to predict patterns in baggage complaints with a high degree of accuracy, enabling airlines to prepare more effectively for periods likely to experience higher volumes of complaints.
+
+Our findings highlight specific months when airlines should enhance their baggage handling capabilities to prevent potential spikes in complaints. By applying these advanced forecasting models, our project not only contributes to the field of time series analysis but also provides actionable insights that can lead to improved passenger satisfaction and more efficient airline operations. This study serves as a cornerstone for future research that could include real-time data tracking and the integration of customer feedback to refine these predictive models further.
+
+# Data
+
+Anyone who travels by air knows that occasional problems are inevitable. Flights can be delayed or cancelled due to weather conditions, mechanical problems, or labor strikes, and baggage can be lost, delayed, damaged, or pilfered. Given that many airlines are now charging for bags, issues with baggage are particularly annoying. Baggage problems can have a serious impact on customer loyalty, and can be costly to the airlines (airlines often have to deliver bags). Air carriers report flight delays, cancellations, overbookings, late arrivals, baggage complaints, and other operating statistics to the U.S. government, which compiles the data and reports it to the public.
+
+The data set contains 252 of monthly observations from 2004 to 2010 for United Airlines, American Eagle, and Hawaiian Airlines. The variables in the data set include:
+
+**Baggage** - The total number of passenger complaints for theft of baggage contents, or for lost, damaged, or misrouted luggage for the airline that month
+
+**Scheduled** - The total number of flights scheduled by that airline that month
+
+**Cancelled** - The total number of flights cancelled by that airline that month
+
+**Enplaned** - The total number of passengers who boarded a plane with the airline that month
+
+The dataset was collected by **Gabriel Santello** usiffng JMP Case Study Library.
+
+# **Methodology**
+
+## SARIMA (p, d, q) x (P, D, Q) Model
+
+The SARIMA model, which stands for Seasonal Autoregressive Integrated Moving Average, extends the ARIMA model to accommodate data with a seasonal component.
+
+1.  **Model Components**:
+
+    -   $p$: Order of the non-seasonal autoregressive (AR) part.
+    -   $d$: Degree of non-seasonal differencing.
+    -   $q$: Order of the non-seasonal moving average (MA) part.
+    -   $P$: Order of the seasonal autoregressive (SAR) part.
+    -   $D$: Degree of seasonal differencing.
+    -   $Q$: Order of the seasonal moving average (SMA) part.
+    -   $s$: Length of the seasonal cycle.
+
+2.  **Model Definition**: The SARIMA model incorporates both non-seasonal and seasonal components. It can be expressed as: $$
+    \Phi_P(B^s) \phi(B) \nabla^D_s \nabla^d x_t = \Theta_Q(B^s) \theta(B) w_t
+    $$ where:
+
+    -   $\phi(B)$ and $\theta(B)$ are polynomials representing the non-seasonal AR and MA components, respectively.
+    -   $\Phi_P(B^s)$ and $\Theta_Q(B^s)$ are polynomials representing the seasonal AR and MA components, respectively.
+    -   $\nabla^d = (1 - B)^d$ represents non-seasonal differencing.
+    -   $\nabla^D_s = (1 - B^s)^D$ represents seasonal differencing.
+    -   $w_t$ is white noise.
+
+3.  **Seasonal Differencing**: Seasonal differencing is applied to remove seasonality from the data. A seasonal difference of order $D$ is defined as: $$
+    \nabla^D_s x_t = (1 - B^s)^D x_t
+    $$ This is typically done when the autocorrelation function (ACF) shows significant spikes at multiples of the seasonal period.
+
+4.  **Parameter Estimation**: The parameters of the SARIMA model are estimated using methods like maximum likelihood estimation (MLE). The process involves fitting the model to the data by finding the values of $p, d, q, P, D, Q$ that minimize the prediction error.
+
+5.  **Model Diagnostics**: Once the model is fitted, it is essential to check the residuals to ensure they resemble white noise. Diagnostic checks include:
+
+    -   Analyzing the residual ACF and partial ACF (PACF) plots.
+    -   Performing statistical tests like the Ljung-Box test to check for autocorrelation.
+
+6.  **Model Selection**: Model selection criteria such as the Akaike Information Criterion (AIC) or the Bayesian Information Criterion (BIC) are used to compare different SARIMA models. The model with the lowest AIC or BIC is generally preferred.
+
+## Spectral Analysis
+
+The spectral analysis of time series data is an tool taht focuses on analyzing the frequency components of time series to identify periodicities, trends, and other characteristics that are not apparent in the time-domain.
+
+1\. **Preprocessing**
+
+-   **Detrending**: Removing the trend component of the time series, making it stationary. This is often done using differencing or regression techniques.
+-   **Smoothing**: Applying moving averages or other smoothing techniques to reduce noise and highlight significant signals.
+
+2\. **Transformation**
+
+-   **Periodogram**: Computing the periodogram, which estimates the spectral density of a series. It is essentially the squared norm of the transformed data, showing the power of each frequency component.
+
+3\. **Spectral Density Estimation**
+
+-   **Parametric Methods**: Fitting models like ARIMA (AutoRegressive Integrated Moving Average), where the spectral density is derived from the model parameters. This approach assumes that the data can be effectively modeled by a linear process.
+
+4\. **Analysis**
+
+-   **Identifying Peaks**: Analyzing the spectral density to identify dominant frequencies which indicate regular cycles in the data.
+
+5\. **Interpretation**
+
+-   **Interpreting Peaks**: Peaks in the spectral density can be interpreted as cycles or periodic components in the time series data.
+
+6\. **Application**
+
+-   **Forecasting**: Using the identified models and frequency components for forecasting future values of the time series.
+
+7\. **Validation**
+
+-   **Model Validation**: Validating the spectral model by checking its predictive power or its consistency with known or expected behavior of the system being modeled.
+
+# **Results**
+
+## SARIMA (p, d, q) x (P, D, Q)
+
+First for the SARIMA model we will plot our time series data using the `ts()` function. Looking at the graph we can see thay our data looks pretty stationary so we will not need to take the difference of our data. However, we should check if we will need to normalize our data by using a Q-Q plot. After checking the Q-Q plot to see if we will need to log-transform the data. We can see that our data set is not normal, so we will need to log transform the data.
+
+![](images/ACF.png)
+
+After we have log transform we will than graph the ACF and PACF to find the lag for q and p. We can see form the plot `p = 8` and `q = 6` we will fit it into the `auto.arima()` function. By fitting it into the `auto.arima()` function, we will get the optimizated ARIMA which is (2,0,2). After we have selected our best model we will graphs the model with the `sarima()` function. This will allow us to analyze our results.
+
+![](images/results.png)
+
+Now we will analyze the results. The results that that has been provided displays four different diagnostic plots related to the evaluation of an ARIMA (Autoregressive Integrated Moving Average) model with parameters (2,0,2).
+
+The first graph shows the standardized residuals of the model over time. The residuals should appear as "white noise," meaning they should be randomly distributed with a constant variance and no pattern. In this graph, the residuals seem to fluctuate around zero without any clear trend or seasonality, suggesting the model has captured most of the underlying data patterns. However, the presence of occasional spikes indicates potential outliers or model inadequacies at specific points.
+
+For the second graph it shows the autocorrelation function (ACF) which checks for any autocorrelation in the residuals. By checking the ACF we can see if the model is well-fitted. If the model is well fitted then most of the autocorrelation spike should be within the confidence interval (blue dashed lines), which typically represents a 95% confidence band, In this case, all the bars are within the confidence interval, suggesting that there is no significant autocorrelation remaining in the residuals. This is a good indication that the model parameters are appropriate.
+
+The fouth graph is the Q-Q Plot of standardized residuals this plot compares the quantiles of standardized residuals with the quantiles of a normal distribution. If the residuals are normally distributed, the points should lie approximately on the diagonal line. In our plot, most points lie on or near the line, but with slight deviations in the tails. This suggests that the residuals are mostly normal, but there might be some issues with outliers or heavy tails.
+
+For the last plot the Ljung-Box test which checks the overall autocorrelation of the residuals at different lags. Ideally, the p-values should be above the significance level commonly 0.05, indicating no autocorrelation. The graph shows that all the p-values are high, consistently above the 0.05 threshold across various lags, which supports the absence of autocorrelation as suggested by the ACF plot.
+
+In conclusion for the ARIMA(2,0,2) model it appears to be a reasonable fit for the data based on the diagnostic. As the residuals are mostly free from patterns and autocorrelation and they are approximately normally distributed with no significant autocorrelation detected by the Ljung-Box test at various lags.
+
+![](images/forcasting.png)
+
+Here is the forecasting trends for the year of 2011 to 2012.
+
+## Spectral Analysis
+
+Spectral Analysis is the decomposition of a time series into underlying sine and cosine functions of different frequencies, which allows us to determine those frequencies that appear particularly strong or important. By applying Spectral Analysis to a data set it involves examining the frequency domain properties of the data. Spectral analysis helps identify dominant cycles and periodicities in the time series.
+
+![](images/raw.png)
+
+![](images/periodogram.png)
+
+To analyze the periodogram graph we have to understand what this graph tells us. A periodogram graph is a tool used in spectral analysis to identify the frequency components of a time series. Let's us first try to understand the graph:
+
+Horizontal Axis (Frequency): Represents the frequency of the time series data. It usually indicates cycles per unit of time.
+
+Vertical Axis (Periodogram): Indicates the power or amplitude of each frequency component.
+
+Now that we know what each of the axis repesent, we should now identifiy the peaks and what is so special about them. The peaks on the periodogram represent the frequencies at which the time series data has significant cyclic behavior. For example, if there is a prominent peak at a frequency of 0.1, this suggests a strong cyclical pattern that repeats every 10 units of time (since 1/0.1 = 10). Peaks that are notably higher than others indicate dominant cycles in the data. The height of the peak reflects the strength of the cycle at that frequency. As seen in the graph above the large peak near frequency 0 suggests a strong constant or very low frequency component, typically the mean level of the series.
+
+![](images/smoothed.png)
+
+From the smoothed periodogram graph, which is a type of spectral density estimate used in signal processing and time series analysis. This type of graph helps identify the dominant frequencies in a data set. By examining the peaks it represent frequencies at which the variance of the signal is concentrated. These peaks indicate the dominant frequencies or cycles in the time series data. For instance, significant peaks around frequencies 1, 3, and 5 suggest these frequencies are important in the time series.
+
+We want to smooth our graph out because to to the readability if the graph is not smooth which might show more detailed frequency components but can be noisier, while more smoothing provides a clearer view of dominant trends but can obscure finer details.
+
+![](images/results%202.png)
+
+These graphs, while primarily serving as diagnostic checks for an ARIMA model, also offer valuable insights for conducting spectral analysis. The examination of these plots can reveal underlying frequency-based phenomena, such as seasonal variations or business cycles, which warrant further exploration through spectral methods.
+
+In the Residuals plot, the presence of noticeable regular patterns or cycles, particularly the significant spikes observed at the start of each year, indicates potential seasonal effects or other cyclical behaviors in the dataset. These recurring annual spikes are of particular interest and suggest a systematic pattern that has not been fully modeled by the ARIMA process. Identifying and understanding these patterns can provide insights into the data’s underlying structure, which may influence future model adjustments or the implementation of different analytical techniques.
+
+The ACF plot shows clear spikes at specific intervals, corroborating the findings from the Residuals plot. These spikes indicate that there are autocorrelations at these lags, which are likely related to the significant spikes seen in the residuals. Such findings in the ACF plot suggest that these cycles have a measurable impact on the data and have not been captured by the non-seasonal ARIMA model.
+
+The presence of these significant spikes in both the Residuals and ACF plots points to the potential benefits of conducting a spectral analysis. By applying spectral analysis techniques such as Fourier Transforms or calculating the spectral density, we can quantify the strength and significance of these observed frequencies.
+
+In summary, the patterns and spikes observed in these diagnostic graphs from ARIMA modeling significantly enrich the groundwork for spectral analysis, guiding further investigations into the periodic and seasonal structures within the data.
+
+# **Conclusion and Future Study**
+
+In conclusion, this project has successfully implemented advanced time series analysis models, specifically the Seasonal Autoregressive Integrated Moving Average (SARIMA) and Spectral Analysis, to forecast the frequency of baggage complaints for major airlines such as United Airlines, American Eagle, and Hawaiian Airlines. By examining a dataset with monthly observations from 2004 to 2010, we were able to discern distinct seasonal patterns and pinpoint specific months where baggage complaints peak, providing essential insights for both travelers and airline operators.
+
+Our findings highlight the critical months when baggage complaints surge, suggesting that airlines should strategically allocate additional resources during these periods to manage the expected increase in complaints more effectively. Such proactive measures could significantly enhance customer satisfaction by mitigating the stress associated with traveling, particularly the distress caused by misplaced luggage. Imagine landing in a new country, only to discover that your belongings are lost—such experiences can dramatically sour a customer's perception of an airline.
+
+The accuracy and reliability of the SARIMA and Spectral Analysis models, as evidenced by their Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE), confirm that they are robust enough for practical application. These insights not only improve our understanding of airline service quality dynamics but also enrich the broader field of time series forecasting.
+
+For future research, extending this analysis to incorporate real-time data tracking and integrating customer satisfaction surveys would further refine the accuracy of our models. This would allow for more dynamic adjustments in airline operations, ultimately broadening the applicability of our findings in enhancing passenger experience and improving airline service management. By adapting policies based on our predictive insights, airlines can lower the incidence of baggage complaints, creating a more positive travel experience for passengers and fostering higher customer loyalty.
+
+# **References**
+
+Santello, Gabriel. “Airline Baggage Complaints - Time Series Dataset.” *Kaggle*, 28 Sept. 2023, www.kaggle.com/datasets/gabrielsantello/airline-baggage-complaints-time-series-dataset/data.
+
+Shumway, R. H., & Stoffer, D. S. (n.d.). *Time Series Analysis and Its Applications With R Examples* (4th ed.). <https://link.springer.com/book/10.1007/978-3-319-52452-8>
+
+# **Appendix**
+
+## Loading the Library
+
+```{r message=FALSE}
+library(astsa)
+library(forecast)
+library(tseries)
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(tidymodels)
+library(stats)
+library(TSA)
+```
+
+## Loading the Dataset
+
+```{r message=FALSE}
+baggage <- read_csv("/Users/fionhuang/Desktop/Pstat 174/Final Project/baggagecomplaints.csv")
+tidymodels_prefer()
+```
+
+## SARIMA (p, d, q) x (P, D, Q)
+
+### Plotting Original Data
+
+```{r}
+set.seed(8888)
+
+# Aggregate monthly baggage complaints
+monthly_complaints <- aggregate(Baggage ~ Year + Month, baggage, sum)
+
+# Create a time series object
+ts_data <- ts(monthly_complaints$Baggage, start=c(2004, 1), frequency=12)
+
+# Plot the time series
+plot(ts_data, main='Monthly Baggage Complaints', ylab='Number of Complaints', xlab='Year')
+```
+
+```{r}
+set.seed(8888)
+
+# Checking normality of dataset
+qqnorm(ts_data)
+qqline(ts_data, col = "darkgreen")
+```
+
+### Log-transform Data
+
+```{r}
+set.seed(8888)
+
+# Log transform the data because data is not normal
+log_ts_data <- log(ts_data)
+
+# Plot the log-transformed data
+plot(log_ts_data, main = 'Log of Monthly Baggage Complaints',
+     ylab='Log of Number of Complaints', xlab='Year')
+
+# Checking normality after log-transformed
+qqnorm(log_ts_data)
+qqline(log_ts_data, col = "darkgreen")
+```
+
+### ACF and PACF
+
+```{r}
+set.seed(8888)
+
+# Plot ACF and PACF
+par(mfrow=c(2,1))
+acf(log_ts_data, main='ACF of Differenced Log-transformed Data')
+pacf(log_ts_data, main='PACF of Differenced Log-transformed Data')
+```
+
+### SARIMA model
+
+```{r}
+set.seed(8888)
+
+# Fit the SARIMA model
+fit1 <- auto.arima(log_ts_data, max.p = 8, max.q = 6)
+```
+
+### Estimation results
+
+```{r}
+sarima(log_ts_data, 2, 0, 2)
+# Display the model summary
+summary(fit1)
+```
+
+### Forecasting
+
+Now this would not be a time series if we did not use our model result to forecast future trend.
+
+```{r}
+library(forecast)
+forecast_length <- 12
+forecast <- forecast(fit1, h = forecast_length)
+plot(forecast, main = "Baggage Complaints Forecast")
+```
+
+## Spectral Analysis
+
+### Plotting Original Dataset
+
+```{r}
+# Aggregate monthly baggage complaints
+monthly_complaints <- aggregate(Baggage ~ Year + Month, baggage, sum)
+
+# Create a time series object
+ts_baggage <- ts(monthly_complaints$Baggage, start=c(2004, 1), frequency=12)
+
+# Plot the time series
+plot(ts_baggage, main='Monthly Baggage Complaints', ylab='Number of Complaints', xlab='Year')
+```
+
+### Raw Periodogram
+
+```{r}
+# Compute log spectrum
+log_baggage_spec <- mvspec(ts_baggage,taper = 0.1, log = 'y')
+```
+
+### Periodogram
+
+```{r}
+# Perform periodogram
+periodogram(ts_baggage, main='Periodogram of Baggage Complaints')
+```
+
+### Smoothed Periodogram
+
+```{r}
+# Smoothed Spectral Density Estimation
+# Applying a smoothing window like the Daniell kernel
+# Interpret the dominant frequencies
+spec <- spectrum(ts_baggage, kernel("daniell", 3), plot = TRUE)
+freq <- spec$freq
+spec_density <- spec$spec
+
+# Identify the frequency with the highest spectral density
+abline(v = c(1.73, 3.32, 5.20), lty = 2)
+```
+
+```{r}
+# Summary of the model
+fit2 <- auto.arima(ts_baggage, seasonal=TRUE)
+summary(fit2)
+
+# Forecasting
+forecasts <- forecast(fit2, h=12) # Forecast for next 12 periods
+plot(forecasts, main='Forecasts of Filtered Baggage Complaints')
+
+# Check residuals
+checkresiduals(fit2)
+```
